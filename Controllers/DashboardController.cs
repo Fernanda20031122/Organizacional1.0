@@ -27,13 +27,7 @@ namespace Organizacional.Controllers
 
             var modelo = documentos.Select(d => new DashboardItemViewModel
             {
-                Servicios = string.Join(" ",
-                    new[]{
-                        d.Suministro.GetValueOrDefault() ? "Suministro" : null,
-                        d.Instalacion.GetValueOrDefault() ? "Instalación" : null,
-                        d.Mantenimiento.GetValueOrDefault() ? "Mantenimiento" : null
-                    }.Where(s => s != null)
-                ),
+                Estado = d.Tareas.FirstOrDefault()?.Estado ?? "Pendiente",
                 FechaInicio = d.FechaInicio?.ToDateTime(TimeOnly.MinValue),
                 FechaFin = d.FechaFin?.ToDateTime(TimeOnly.MinValue),
                 IdDocumento = d.IdDocumento,
@@ -66,7 +60,13 @@ namespace Organizacional.Controllers
 
                 TecnicoAsignado = (d.Suministro.GetValueOrDefault() || d.Instalacion.GetValueOrDefault() || d.Mantenimiento.GetValueOrDefault())
                     ? d.Tareas.FirstOrDefault(t => t.IdTecnicoAsignadoNavigation != null)?.IdTecnicoAsignadoNavigation?.Nombre ?? "No asignado"
-                    : "N/A"
+                    : "N/A",
+
+                // Estos los usas para mostrar viñetas o íconos en la vista
+                Suministro = d.Suministro ?? false,
+                Instalacion = d.Instalacion ?? false,
+                Mantenimiento = d.Mantenimiento ?? false
+
             }).ToList();
 
             return View(modelo);
@@ -173,6 +173,19 @@ namespace Organizacional.Controllers
             return View(documento);
         }
 
+        [HttpPost]
+        public async Task<IActionResult> CambiarEstadoTarea(int idTarea, string nuevoEstado)
+        {
+            var tarea = await _context.Tareas.FindAsync(idTarea);
+            if (tarea == null)
+                return NotFound();
+
+            tarea.Estado = nuevoEstado;
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("Detalle", new { id = tarea.IdDocumento });
+        }
+
         [HttpGet]
         public async Task<IActionResult> AsignarTecnico(int id)
         {
@@ -214,7 +227,7 @@ namespace Organizacional.Controllers
 
             return RedirectToAction(nameof(Detalle), new { id = idDocumento });
         }
-            
+
         [HttpGet]
         public async Task<IActionResult> RegistrarMantenimiento(int id)
         {
@@ -255,6 +268,7 @@ namespace Organizacional.Controllers
             await _context.SaveChangesAsync();
             return RedirectToAction("Detalle", new { id = mantenimiento.IdDocumento });
         }
+
         [HttpPost]
         public async Task<IActionResult> ActualizarProximoMantenimiento(int id, DateOnly? nuevaFecha)
         {

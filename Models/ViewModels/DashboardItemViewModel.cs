@@ -4,6 +4,7 @@ namespace Organizacional.Models.ViewModels
 {
     public class DashboardItemViewModel
     {
+        public int? IdTarea { get; set; }
         public int IdDocumento { get; set; }
         public string Tipo { get; set; } = "";
         public string NumeroDocumento { get; set; } = "";
@@ -18,5 +19,8 @@ namespace Organizacional.Models.ViewModels
         public DateTime? FechaInicio { get; set; }
         public DateTime? FechaFin { get; set; }
         public string Servicios { get; set; } = "";
+        public bool Suministro { get; set; }
+        public bool Instalacion { get; set; }
+        public bool Mantenimiento { get; set; }
     }
 }
