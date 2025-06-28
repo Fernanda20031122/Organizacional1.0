@@ -54,7 +54,7 @@ namespace Organizacional.Controllers
 
             // Redirigir por rol
             if (usuario.IdRol == 1) return RedirectToAction("Index", "Dashboard"); // Admin
-            if (usuario.IdRol == 2) return RedirectToAction("Index", "Tareas");    // Técnico
+            if (usuario.IdRol == 2) return RedirectToAction("Index", "Dashboard");    // Técnico
 
             return RedirectToAction("Index", "Home");
         }
@@ -135,13 +135,24 @@ namespace Organizacional.Controllers
                 return View(model);
             }
 
-            // 🔒 Aquí se realiza el cambio
+            //  Aquí se realiza el cambio
             usuario.Contrasena = model.NuevaContrasena;
             usuario.DebeCambiarContrasena = false;
             await _context.SaveChangesAsync();
 
+
             TempData["Mensaje"] = "✅ Contraseña actualizada correctamente.";
             return RedirectToAction("Login");
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Logout()
+        {
+            // Limpia toda la sesión
+            HttpContext.Session.Clear();
+
+            // Redirige al Login
+            return RedirectToAction("Login", "Auth");
         }
     }
 }
